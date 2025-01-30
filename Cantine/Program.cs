@@ -14,7 +14,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<CantineDbContext>(options =>
     options.UseInMemoryDatabase("BillingDb"));
 
-builder.Services.AddScoped<BillService>();
+builder.Services.AddScoped<IBillService,BillService>();
 
 var app = builder.Build();
 
