@@ -15,7 +15,8 @@ public class CantineDbContext : DbContext
             new Client { Id = 1, Name = "Dupont", Type = ClientType.Internal, Balance = 200 },
             new Client { Id = 2, Name = "Jean", Type = ClientType.Visitor, Balance = 1 },
             new Client { Id = 3, Name = "Paul", Type = ClientType.VIP, Balance = 0 },
-            new Client { Id = 4, Name = "Eric", Type = ClientType.Intern, Balance = 100 }
+            new Client { Id = 4, Name = "Eric", Type = ClientType.Intern, Balance = 1 },
+            new Client { Id = 5, Name = "Fabien", Type = ClientType.Internal, Balance = 2 }
         );
 
         modelBuilder.Entity<Product>().HasData(

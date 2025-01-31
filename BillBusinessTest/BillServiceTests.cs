@@ -87,14 +87,14 @@ public class BillServiceTests
             { 1, 1 },  // 1x Entrée
             { 2, 1 },  // 1x Plat
             { 3, 1 },  // 1x Dessert
-            { 5, 2 },  // 2x Pain
+            { 5, 2 },  // 2x Pain (1 pain hors plat fixe)
             { 6, 2 }   // 2x Boissons (hors plat fixe)
         };
 
         var ticket = _billService.GenerateTicket(1, order);
 
         Assert.NotNull(ticket);
-        Assert.Equal(10m + 2 + 0.4m, ticket.TotalPlate); // Plat fixe + 2x Boissons (hors plat fixe)
+        Assert.Equal(10m + 2 + 0.4m, ticket.TotalPlate); // Plat fixe + 2x Boissons (hors plat fixe) + 1 pain (hors plat fixe) 
         Assert.Equal(200m - ticket.AmountToPay, _dbContext.Clients.First(c => c.Id == 1).Balance);
     }
 
@@ -131,6 +131,7 @@ public class BillServiceTests
         Assert.Throws<ArgumentException>(() => _billService.GetClient(99));
     }
 
+
     [Fact]
     public void GenerateTicket_ValidOrder_ReturnsTicket()
     {
@@ -147,12 +148,37 @@ public class BillServiceTests
     public void GenerateTicket_InsufficientBalance_ThrowsException()
     {
         var client = DbContext.Clients.First(c => c.Id == 2);
-        DbContext.SaveChanges();
 
         var order = new Dictionary<int, int> { { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 } };
 
         Assert.Throws<InvalidOperationException>(() => _billService.GenerateTicket(2, order));
     }
+
+    [Fact]
+    public void GenerateTicket_VIP_AmountToPayZero()
+    {
+        var client = DbContext.Clients.First(c => c.Id == 3);
+
+        var order = new Dictionary<int, int> { { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 } };
+
+        var ticket = _billService.GenerateTicket(3, order);
+
+        Assert.Equal(0, ticket.AmountToPay);
+    }
+
+    [Fact]
+    public void GenerateTicket_Internal_AllowNegativeBalance()
+    {
+        var client = DbContext.Clients.First(c => c.Id == 5);
+
+        var order = new Dictionary<int, int> { { 1, 1 }, { 2, 1 }, { 3, 1 }, { 5, 1 } };
+
+        var ticket = _billService.GenerateTicket(5, order);
+
+        Assert.Equal(2.5m, ticket.AmountToPay);
+        Assert.Equal(-0.5m, client.Balance);
+    }
+
 
     [Fact]
     public void CreditBalance_PositiveAmount_UpdatesBalance()
